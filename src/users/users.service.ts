@@ -1,29 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from 'src/prisma.service';
+//////////////////////
+// user.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
-export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+export class UserService {
+  private users = []; // Remplacez par votre source de données réelle (base de données, stockage en mémoire, etc.)
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  getAllUsers() {
+    // Logique pour récupérer tous les utilisateurs
+    return this.users;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  getUserById(userId: string) {
+    // Logique pour récupérer un utilisateur par ID
+    const user = this.users.find(u => u.userId === userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  createUser(userData: any) {
+    // Logique pour créer un utilisateur
+    const newUser = {
+      userId: this.users.length + 1,
+      ...userData,
+    };
+    this.users.push(newUser);
+    return newUser;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  updateUser(userId: string, userData: any) {
+    // Logique pour mettre à jour un utilisateur par ID
+    const userIndex = this.users.findIndex(u => u.userId === userId);
+    if (userIndex === -1) {
+      throw new NotFoundException('User not found');
+    }
+
+    this.users[userIndex] = {
+      ...this.users[userIndex],
+      ...userData,
+    };
+
+    return this.users[userIndex];
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  deleteUser(userId: string) {
+    // Logique pour supprimer un utilisateur par ID
+    const userIndex = this.users.findIndex(u => u.userId === userId);
+    if (userIndex === -1) {
+      throw new NotFoundException('User not found');
+    }
+
+    this.users.splice(userIndex, 1);
   }
 }
