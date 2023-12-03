@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+<<<<<<< HEAD
+=======
+import { PrismaService } from 'src/prisma.service';
+>>>>>>> refs/remotes/origin/develop
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ProductsService {
@@ -16,24 +19,49 @@ export class ProductsService {
     return this.products;
   }
 
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  async createProduct(createProductDto: CreateProductDto) {
+    const { product_name, product_description, product_price, product_quantity } = createProductDto;
+
+    return this.prisma.products.create({
+      data: {
+        name: product_name,
+        description: product_description,
+        price: product_price,
+        quantity: product_quantity,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async updateProduct(id: string, updateProductDto: UpdateProductDto) {
+    return this.prisma.products.update({
+      where: {
+        UUID: id,
+      },
+      data: {
+        name: updateProductDto.product_name,
+        description: updateProductDto.product_description,
+        price: updateProductDto.product_price,
+        quantity: updateProductDto.product_quantity,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
+  async deleteProduct(id: string) {
+    const product = await this.prisma.products.findUnique({
+      where: {
+        UUID: id,
+      },
+    });
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+    return this.prisma.products.delete({
+      where: {
+        UUID: id,
+      },
+    });
   }
   getAllProducts() {
     // Logique pour récupérer tous les produits
