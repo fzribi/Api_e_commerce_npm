@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Products {
+  product_UUID        String    @id(map: "products_uuid") @unique() @default(uuid()) @db.VarChar(36) //UUIDv4
+  product_name        String    @db.VarChar(20)
+  product_description String    @db.Text()
+  product_price       Float
+  product_quantity    Int       @default(1)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now())
+
+  // Many-to-many relationship with Orders
+  orders OrdersOnProducts[]
+}
+
+model Users {
+  user_UUID        String    @id(map: "users_uuid") @unique() @default(uuid()) @db.VarChar(36) //UUIDv4
+  user_pseudo      String    @db.VarChar(20)
+  username         String    @db.VarChar(30)
+  user_password    String    @db.VarChar(72)
+  created_at       DateTime  @default(now())
+
+  // Many-to-many relationship with Orders
+  orders OrdersOnUsers[]
+}
+
+model Orders {
+  order_number         Int        @id @default(autoincrement()) @unique()
+  order_total_cost_ht  String     @db.VarChar(36)
+  order_total_quantity Int        @default(1)
+  created_at           DateTime   @default(now())
+  deliver_at           DateTime   @default(now())
+
+  // Many-to-many relationship with Products
+  products OrdersOnProducts[]
+
+  // Many-to-many relationship with Users
+  users OrdersOnUsers[]
+}
+
+model OrdersOnProducts {
+  order_number Int
+  product_UUID String
+
+  order   Orders   @relation(fields: [order_number], references: [order_number])
+  product Products @relation(fields: [product_UUID], references: [product_UUID])
+
+  @@id([order_number, product_UUID])
+}
+
+model OrdersOnUsers {
+  order_number Int
+  user_UUID String
+
+  order Orders @relation(fields: [order_number], references: [order_number])
+  user Users   @relation(fields: [user_UUID], references: [user_UUID])
+
+  @@id([order_number, user_UUID])
+}
